@@ -1,0 +1,1 @@
+# jogo_idle_imperiall_2026
