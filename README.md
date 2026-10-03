@@ -71,6 +71,17 @@ O `base` do Vite está fixado em `/jogo_idle_imperiall_2026/` porque este é um
 *project site*. O workflow falha se o prefixo divergir — assim um 404 silencioso
 vira erro de build.
 
+### Antes do primeiro deploy
+
+O Pages precisa ser ligado uma vez, pelo navegador:
+
+1. <https://github.com/Kazenski/jogo_idle_imperiall_2026/settings/pages>
+2. Em **Build and deployment → Source**, escolha **GitHub Actions**
+3. Salve
+
+Depois disso, todo push na `main` publica sozinho. Enquanto o Pages não estiver
+ligado o build continua verde e o workflow imprime um aviso com o link.
+
 ## APK Android
 
 Ver [`twa/README.md`](twa/README.md). Resumo: o APK embrulha a URL do Pages
