@@ -2,6 +2,9 @@
 node_modules/
 
 # Build
+# NAO versionar `dist/`: o GitHub Actions gera a build no deploy. Versionar
+# build output duplica cada bundle no repo e cria diffs enormes sem valor.
+# (O repo tambem tem `dist/` no historico — ver `git rm -r --cached dist`.)
 dist/
 *.tsbuildinfo
 

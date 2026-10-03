@@ -11,10 +11,29 @@
 
 import assert from 'node:assert/strict';
 
+/**
+ * Os testes de save rodam em Node, sem DOM. `localStorage` existe no Node 22+
+ * (experimental), mas para nao depender disso e para nao sujar o storage real,
+ * plantamos um dublê. `carregar()` so precisa de get/set/remove.
+ */
+const CHAVE_TESTE = 'imperiall-idle:save:v1';
+const memoria = new Map<string, string>();
+
+(globalThis as Record<string, unknown>).localStorage = {
+  getItem: (k: string) => memoria.get(k) ?? null,
+  setItem: (k: string, v: string) => void memoria.set(k, String(v)),
+  removeItem: (k: string) => void memoria.delete(k),
+  clear: () => memoria.clear(),
+  key: (i: number) => [...memoria.keys()][i] ?? null,
+  get length() {
+    return memoria.size;
+  },
+} as Storage;
+
 import { BALANCE, custoDaUnidade, custoDoLote, maximoCompravel } from '../src/core/balance.ts';
 import { comprarCarta, criarCombate, tickCombate, previaCompra } from '../src/core/combate.ts';
 import { derivar, saveNovo, cartasDisponiveis } from '../src/core/estado.ts';
-import { aplicarOffline } from '../src/core/save.ts';
+import { aplicarOffline, carregar } from '../src/core/save.ts';
 import { fazerPrestigio, previaPrestigio } from '../src/core/prestigio.ts';
 import { abreviar, duracao } from '../src/ui/formatar.ts';
 import { CARTAS_POR_ID } from '../src/data/cartas.ts';
@@ -149,6 +168,65 @@ teste('ouro nunca fica negativo apos uma compra valida', () => {
 
 teste('save novo nao tem carta comprada', () => {
   assert.deepEqual(saveNovo().cartas, {});
+});
+
+// ---------------------------------------------------------------------------
+grupo('Sanidade do save (entrada nao confiavel)');
+
+/** Recria o que `carregar()` faz: valida e normaliza um save cru. */
+function carregarCru(cru: Record<string, unknown>) {
+  localStorage.setItem(CHAVE_TESTE, JSON.stringify(cru));
+  return carregar();
+}
+
+teste('nivel negativo e corrigido para 1', () => {
+  assert.equal(carregarCru({ nivel: -50 }).nivel, 1);
+});
+
+teste('ouro nao-numerico vira 0 em vez de NaN', () => {
+  const s = carregarCru({ ouro: 'abc', ouroTotalGanho: null, xp: NaN });
+  assert.equal(s.ouro, 0);
+  assert.equal(s.ouroTotalGanho, 0);
+  assert.equal(s.xp, 0);
+  assert.ok(!Number.isNaN(s.ouro));
+});
+
+teste('id de carta inexistente e descartado', () => {
+  const s = carregarCru({ cartas: { 'espada-ferro': 5, 'id-que-nao-existe': 99 } });
+  assert.deepEqual(s.cartas, { 'espada-ferro': 5 });
+});
+
+teste('nivel de carta negativo e descartado (nao quebra a curva de custo)', () => {
+  const s = carregarCru({ cartas: { 'golem-pedra': -4, 'espada-ferro': 3 } });
+  assert.deepEqual(s.cartas, { 'espada-ferro': 3 });
+  // E o derivado continua finito.
+  const stats = derivar(s);
+  assert.ok(Number.isFinite(stats.cps));
+  assert.ok(Number.isFinite(stats.dps));
+});
+
+teste('prefs invalidas caem no default', () => {
+  const s = carregarCru({ prefs: { aba: 'aba-invalida', quantidadeCompra: 77, redutorAnimacoes: 'sim' } });
+  assert.ok(['combate', 'loja', 'cartas', 'prestigio', 'ajustes'].includes(s.prefs.aba));
+  assert.ok([1, 10, 50, 100, 'max'].includes(s.prefs.quantidadeCompra as never));
+  assert.equal(s.prefs.redutorAnimacoes, false);
+});
+
+teste('save de versao futura e rebaixado para a atual', () => {
+  assert.equal(carregarCru({ versao: 99, nivel: 7 }).versao, 1);
+});
+
+teste('save sem versao (pre-esquema) e aceito', () => {
+  const s = carregarCru({ ouro: 500 });
+  assert.equal(s.versao, 1);
+  assert.equal(s.ouro, 500);
+});
+
+teste('json invalido devolve save novo em vez de quebrar', () => {
+  localStorage.setItem(CHAVE_TESTE, '{isto nao e json');
+  const s = carregar();
+  assert.equal(s.nivel, 1);
+  assert.equal(s.ouro, 0);
 });
 
 // ---------------------------------------------------------------------------

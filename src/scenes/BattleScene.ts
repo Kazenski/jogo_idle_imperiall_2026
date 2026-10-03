@@ -333,6 +333,14 @@ export class BattleScene extends Phaser.Scene {
 export interface JogoRefs {
   game: Phaser.Game;
   cena: BattleScene;
+  /**
+   * Reaplica o tamanho do palco no canvas.
+   *
+   * Preciso chamar apos exibir o palco: enquanto ele esta em `display: none`
+   * (outra aba), o ResizeObserver mede zero e nao consegue corrigir sozinho
+   * quando o elemento volta a ter area.
+   */
+  redimensionar: () => void;
 }
 
 /**
@@ -346,16 +354,18 @@ export function criarJogo(pai: HTMLElement): JogoRefs {
   const cena = new BattleScene();
 
   // Dimensao inicial EXPLICITA. Confiar na medicao do parent no boot e fragil:
-  // se o elemento estiver `display: none` ou ainda sem layout (fonte carregando),
-  // o Phaser cria um framebuffer 0x0 e o WebGL morre com "Incomplete
-  // Attachment". Passando um valor inicial valido o framebuffer sempre nasce
-  // certo, e o RESIZE abaixo corrige o resto.
+  // se o elemento estiver `display: none` ou ainda sem layout, o Phaser cria um
+  // framebuffer 0x0 e o WebGL morre com "Incomplete Attachment".
+  let ultimo = { largura: 1, altura: 1 };
   const medir = () => {
     const r = pai.getBoundingClientRect();
-    return {
-      largura: Math.max(1, Math.round(r.width)),
-      altura: Math.max(1, Math.round(r.height)),
-    };
+    // Medicao ZERO e temporaria (aba oculta = `display: none`). Redimensionar
+    // para 1x1 nesse estado destroi o canvas de vez: ao voltar, o Phaser
+    // continua com o framebuffer minusculo e a tela fica preta. Por isso
+    // ignoramos e mantemos a ultima dimensao boa.
+    if (r.width < 1 || r.height < 1) return ultimo;
+    ultimo = { largura: Math.round(r.width), altura: Math.round(r.height) };
+    return ultimo;
   };
 
   const inicial = medir();
@@ -369,8 +379,12 @@ export function criarJogo(pai: HTMLElement): JogoRefs {
     pixelArt: true,
     roundPixels: true,
     scale: {
-      mode: Phaser.Scale.RESIZE,
-      autoCenter: Phaser.Scale.CENTER_BOTH,
+      // NONE, e nao RESIZE: o modo RESIZE tem um ResizeObserver proprio que
+      // redimensiona o canvas para 0 quando o elemento fica `display: none`
+      // (outra aba do jogo). Isso destroi o framebuffer e a tela volta preta
+      // para sempre — nao ha como recuperar. Assumimos o controle do tamanho
+      // no observer daqui, que ignora medicao zero.
+      mode: Phaser.Scale.NONE,
     },
     banner: false,
     scene: [cena],
@@ -380,15 +394,35 @@ export function criarJogo(pai: HTMLElement): JogoRefs {
   // tamanho quando a coluna do layout muda (ou quando volta de `display:none`),
   // sem evento de janela. O ResizeObserver cobre esse buraco.
   const observar = new ResizeObserver(() => {
-    // O observer pode disparar antes do boot ou depois do teardown (aba
-    // fechada, HMR do Vite). Nos dois casos nao ha framebuffer para mexer.
+    // Pode disparar antes do boot ou depois do teardown (aba fechada, HMR).
     if (!game.isBooted || !game.isRunning) return;
-    const { largura, altura } = medir();
-    if (game.scale.width !== largura || game.scale.height !== altura) {
-      game.scale.resize(largura, altura);
-    }
+    redimensionar();
   });
   observar.observe(pai);
 
-  return { game, cena };
+  // O palco pode ja ter area antes do observer existir, e o boot do Phaser
+  // acontece no proximo frame. Garante o primeiro ajuste.
+  game.events.once(Phaser.Core.Events.READY, redimensionar);
+
+  /**
+   * Ajusta o canvas e o CSS ao tamanho atual do palco.
+   *
+   * Com `Scale.NONE` o Phaser so escreve `width`/`height` nos atributos do
+   * canvas; o `style` continua vazio e o elemento renderia no tamanho antigo.
+   * Por isso fixamos o style explicitamente.
+   */
+  function redimensionar(): void {
+    const { largura, altura } = medir();
+    const canvas = game.canvas;
+    if (canvas) {
+      canvas.style.width = `${largura}px`;
+      canvas.style.height = `${altura}px`;
+      canvas.style.marginLeft = '0px';
+      canvas.style.marginTop = '0px';
+    }
+    if (game.scale.width === largura && game.scale.height === altura) return;
+    game.scale.resize(largura, altura);
+  }
+
+  return { game, cena, redimensionar };
 }

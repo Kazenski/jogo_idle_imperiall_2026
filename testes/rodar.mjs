@@ -20,6 +20,7 @@ const entrada = join(raiz, 'testes/nucleo.test.ts');
 
 const dir = mkdtempSync(join(tmpdir(), 'imperiall-teste-'));
 const saida = join(dir, 'nucleo.mjs');
+let codigo = 1;
 
 try {
   await build({
@@ -33,11 +34,14 @@ try {
     // os imports. `external: node:*` mantem os builtins intactos.
     external: ['node:*'],
     logLevel: 'warning',
-    });
+  });
 
-  // O proprio arquivo de teste chama `process.exit(1)` quando algo falha.
+  // O arquivo de teste chama `process.exit(1)` quando algo falha.
   const proc = spawnSync(process.execPath, [saida], { stdio: 'inherit' });
-  process.exit(proc.status ?? 1);
+  codigo = proc.status ?? 1;
 } finally {
   rmSync(dir, { recursive: true, force: true });
 }
+
+// `process.exit` dentro do `finally` nao roda: a flag precisa sair daqui.
+process.exit(codigo);

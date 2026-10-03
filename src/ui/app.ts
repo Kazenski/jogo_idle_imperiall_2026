@@ -61,6 +61,7 @@ export function iniciarJogo(host: HTMLElement): void {
       if (r.ok) {
         loja.definirQuantidade(save.prefs.quantidadeCompra);
         marcarSucesso(cardId);
+        hud.atualizar(save, derivar(save), 0);
       } else if (r.motivo === 'ouro-insuficiente') {
         avisar('Ouro insuficiente.');
       }
@@ -82,6 +83,7 @@ export function iniciarJogo(host: HTMLElement): void {
       save.ouro -= custo;
       save.moedasDeArenacao += 1;
       salvar(save);
+      renderTelas(derivar(save));
     },
     aoFazerPrestigio() {
       const previa = previaPrestigio(save);
@@ -95,6 +97,10 @@ export function iniciarJogo(host: HTMLElement): void {
       reiniciarCombate();
       loja.definirQuantidade(save.prefs.quantidadeCompra);
       salvar(save);
+      // Re-renderiza: as telas so se atualizam no tick do loop, e o reset
+      // mudou todos os numeros de uma vez.
+      renderTelas(derivar(save));
+      hud.atualizar(save, derivar(save), 0);
       avisar(`+${ganhas} coroa(s). Nova run comecou.`);
     },
     aoReduzirAnimacoes(v) {
@@ -110,12 +116,16 @@ export function iniciarJogo(host: HTMLElement): void {
       reiniciarCombate();
       loja.definirQuantidade(save.prefs.quantidadeCompra);
       salvar(save);
+      renderTelas(derivar(save));
+      hud.atualizar(save, derivar(save), 0);
     },
     aoApagar() {
       save = saveNovo();
       reiniciarCombate();
-      loja.definirQuantidade(save.prefs.quantidadeCompra);
+      loja.definirQuantidade(save.prefs.quantidadeCompra as SelecaoQuantidade);
       salvar(save);
+      renderTelas(derivar(save));
+      hud.atualizar(save, derivar(save), 0);
     },
     aoInstalar() {
       instalarPwa();
@@ -168,11 +178,9 @@ export function iniciarJogo(host: HTMLElement): void {
   // --- Phaser --------------------------------------------------------------
   // `criarJogo` entrega a cena sincronamente, antes do boot do Phaser terminar.
   let cena: BattleScene | null = null;
-  {
-    const jogo = criarJogo(palco);
-    cena = jogo.cena;
-    cena.definirCombate(combate, save.prefs.redutorAnimacoes);
-  }
+  const jogo = criarJogo(palco);
+  cena = jogo.cena;
+  cena.definirCombate(combate, save.prefs.redutorAnimacoes);
 
   // --- Abas ----------------------------------------------------------------
   let abaAtual: Tabs = save.prefs.aba;
@@ -194,9 +202,25 @@ export function iniciarJogo(host: HTMLElement): void {
     });
 
     if (cena) cena.definirCombate(combate, save.prefs.redutorAnimacoes);
+
+    // Ao voltar para a aba Combate, o palco sai de `display: none`. O canvas
+    // ficou com o tamanho anterior (ou 0x0 se nunca teve area), entao
+    // reaplicamos a medida. Sem isso a tela volta preta.
+    if (id === 'combate') jogo.redimensionar();
+
+    // Render na hora da troca. `renderTelas` so desenha a aba ativa, entao
+    // esperar o proximo tick mostraria uma lista vazia por ate 100ms — e
+    // nada renderiza se o `requestAnimationFrame` estiver pausado.
+    renderTelas(derivar(save));
   }
 
   trocarAba(abaAtual);
+
+  // Primeira renderizacao imediata. Sem isto, a tela salva so apareceria no
+  // primeiro tick do loop — e se o rAF estiver pausado (aba em fundo,
+  // economia de energia no celular), ficaria permanentemente em branco.
+  hud.atualizar(save, derivar(save), 0);
+  renderTelas(derivar(save));
 
   // --- Loop ----------------------------------------------------------------
   let ultimoTick = performance.now();
@@ -269,9 +293,27 @@ export function iniciarJogo(host: HTMLElement): void {
   // Em `visibilitychange` e no `pagehide` alem do intervalo: fechar a aba nao
   // pode custar progresso. Sem isso o jogador perde ate 5s + todo o offline.
   window.setInterval(() => salvar(save), BALANCE.autosaveMs);
+
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') salvar(save);
+    if (document.visibilityState === 'hidden') {
+      salvar(save);
+      return;
+    }
+
+    // VOLTOU PARA A ABA. O navegador pausa `requestAnimationFrame` em aba de
+    // fundo, entao o loop nao rodou nada nesse intervalo — sem creditar aqui,
+    // o jogador perde todo o tempo spent looking elsewhere. Como o autosave ja
+    // rodou ao esconder, o intervalo lost esta certo e `aplicarOffline`
+    // devolve exatamente o que faltou.
+    const perdido = aplicarOffline(save, combate);
+    if (perdido && perdido.ouro > 0) {
+      ultimoTick = performance.now(); // evita um dt gigante no proximo frame
+      hpAnterior = combate.hpInimigo;
+      salvar(save);
+      avisar(`+${abreviar(perdido.ouro)} ouro enquanto voce estava fora.`);
+    }
   });
+
   window.addEventListener('pagehide', () => salvar(save));
 
   // --- Feedback de compra --------------------------------------------------

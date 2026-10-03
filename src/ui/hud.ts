@@ -53,15 +53,25 @@ export function criarHud(): HudRefs {
 
   const raiz = h('header', { class: 'hud' }, [elOuroBloco, elNivelBloco, elCoroaBloco, elMundoBloco]);
 
-  let ouroMostrado = 0;
+  // `null` = ainda nao houve render. O primeiro quadro mostra o valor exato:
+  // interpolar a partir de 0 dejaria a tela em "0" ate o proximo tick.
+  let ouroMostrado: number | null = null;
 
   return {
     raiz,
     atualizar(save, stats, dtSegundos) {
-      // Suaviza o numero de ouro: interpolar direto causa "pulo" visual
-      // sempre que um abate credita um premio grande de uma vez.
-      ouroMostrado += (save.ouro - ouroMostrado) * Math.min(1, dtSegundos * 8);
-      if (Math.abs(save.ouro - ouroMostrado) < 0.5) ouroMostrado = save.ouro;
+      if (ouroMostrado === null) {
+        ouroMostrado = save.ouro;
+      } else if (Math.abs(save.ouro - ouroMostrado) > save.ouro * 0.2 + 100) {
+        // Salto grande (prestigio, progresso offline, import): encosta no
+        // valor real em vez de deslizar por varios segundos.
+        ouroMostrado = save.ouro;
+      } else {
+        // Suaviza o numero: interpolar direto causa "pulo" visual sempre que
+        // um abate credita um premio grande de uma vez.
+        ouroMostrado += (save.ouro - ouroMostrado) * Math.min(1, dtSegundos * 8);
+        if (Math.abs(save.ouro - ouroMostrado) < 0.5) ouroMostrado = save.ouro;
+      }
 
       definirTexto(elOuro, abreviar(ouroMostrado));
       definirTexto(elCps, `${abreviar(stats.cps)}/s`);

@@ -86,13 +86,21 @@ function sanitizePrefs(bruto: unknown): Partial<SaveData['prefs']> {
   };
 }
 
-/** Descarta ids de carta que nao existem mais no conteudo (ou foi removido). */
+/**
+ * Descarta ids de carta que sairam do conteudo e normaliza os niveis.
+ *
+ * Salvamento de estado em localStorage e entrada nao confiavel: o jogador pode
+ * ter editado à mao, um save antigo pode ter trazido um bug, e `nivel` negativo
+ * quebraria `custoDaUnidade` (elevado a fracao negativa). Sanitizar aqui mantem
+ * o resto do jogo livre de `if (nivel > 0)` espalhado pelo codigo.
+ */
 function sanitizeCartas(brutas: unknown): Record<string, number> {
   const saida: Record<string, number> = {};
   if (!brutas || typeof brutas !== 'object') return saida;
   for (const [id, nivel] of Object.entries(brutas as Record<string, unknown>)) {
     if (!CARTAS_POR_ID[id]) continue;
-    const n = typeof nivel === 'number' && Number.isFinite(nivel) ? Math.floor(nivel) : 0;
+    if (typeof nivel !== 'number' || !Number.isFinite(nivel)) continue;
+    const n = Math.floor(nivel);
     if (n > 0) saida[id] = n;
   }
   return saida;
