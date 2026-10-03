@@ -1,0 +1,26 @@
+{
+  "name": "imperiall-idle",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Idle RPG de cartas ambientado no Imperiall RPG. Web (PWA) + Android via TWA.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 4173",
+    "typecheck": "tsc --noEmit",
+    "icones": "node scripts/gerar-icones.mjs",
+    "twa:init": "bubblewrap init",
+    "twa:update": "bubblewrap update",
+    "twa:build": "bubblewrap build"
+  },
+  "dependencies": {
+    "phaser": "^3.90.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7",
+    "vite-plugin-pwa": "^0.21.1"
+  }
+}

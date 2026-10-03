@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5"
+    />
+    <title>Imperiall Idle</title>
+    <meta
+      name="description"
+      content="Idle RPG de cartas do Imperiall RPG: monte sua tropa, acumule ouro e renarquicie."
+    />
+
+    <!--
+      theme-color: o Android usa isso na barra do sistema.
+      media= prefers-color-scheme deixa o tema escuro como padrao explicito.
+    -->
+    <meta name="theme-color" content="#12151d" />
+    <meta name="color-scheme" content="dark" />
+
+    <!-- PWA / TWA: sem isso o "instalar app" nao aparece. -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Imperiall" />
+
+    <!-- PWA -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <!--
+      O chunk do Phaser e o boot mais lento do jogo. O Vite injeta o
+      modulepreload do chunk na build; nao vale hardcodar o caminho aqui.
+    -->
+  </head>
+  <body>
+    <div id="app"></div>
+    <noscript>
+      <div class="erro-fatal">
+        <h1>Imperiall Idle</h1>
+        <p>Este jogo precisa de JavaScript habilitado.</p>
+      </div>
+    </noscript>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

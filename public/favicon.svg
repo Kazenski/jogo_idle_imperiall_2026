@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" shape-rendering="crispEdges">
+  <rect width="64" height="64" fill="#12151d"/>
+  <!-- coroa pixelada, mesma paleta dos sprites -->
+  <path fill="#c08a3e" d="M8 44h48v6H8z"/>
+  <path fill="#ffe27a" d="M10 20h6v20h-6zM29 14h6v26h-6zM48 20h6v20h-6z"/>
+  <path fill="#8a6a3a" d="M10 34h44v10H10z"/>
+  <path fill="#ffe27a" d="M20 36h6v6h-6zM39 36h6v6h-6z"/>
+</svg>
