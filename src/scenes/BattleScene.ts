@@ -216,6 +216,8 @@ export class BattleScene extends Phaser.Scene {
 
   private reposicionar(): void {
     const { width, height } = this.scale;
+    this.desenharCenario();
+
     const xHeroi = width * 0.22;
     const yHeroi = height * 0.62;
     const xInimigo = width * 0.74;
@@ -368,4 +370,15 @@ export function criarJogo(pai: HTMLElement): JogoRefs {
   // tamanho quando a coluna do layout muda (ou quando volta de `display:none`),
   // sem evento de janela. O ResizeObserver cobre esse buraco.
   const observar = new ResizeObserver(() => {
-    // O 
+    // O observer pode disparar antes do boot ou depois do teardown (aba
+    // fechada, HMR do Vite). Nos dois casos nao ha framebuffer para mexer.
+    if (!game.isBooted || !game.isRunning) return;
+    const { largura, altura } = medir();
+    if (game.scale.width !== largura || game.scale.height !== altura) {
+      game.scale.resize(largura, altura);
+    }
+  });
+  observar.observe(pai);
+
+  return { game, cena };
+}
