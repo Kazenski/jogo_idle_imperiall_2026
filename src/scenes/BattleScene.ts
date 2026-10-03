@@ -26,8 +26,9 @@ export class BattleScene extends Phaser.Scene {
   private rotuloEstagio!: Phaser.GameObjects.Text;
   private flash!: Phaser.GameObjects.Rectangle;
   private numeroFlutuante!: Phaser.GameObjects.Text;
-  private ceu!: Phaser.GameObjects.Graphics;
-  private chao!: Phaser.GameObjects.Graphics;
+  /** Cenario redesenhado a cada resize; precisa ser destruido antes do novo. */
+  private ceu: Phaser.GameObjects.Graphics | null = null;
+  private chao: Phaser.GameObjects.Graphics | null = null;
 
   private combate: EstadoCombate | null = null;
   private tweenIdle: Phaser.Tweens.Tween | null = null;
@@ -118,12 +119,14 @@ export class BattleScene extends Phaser.Scene {
       .setOrigin(0.5, 1);
 
     // Barra de vida do alvo, em cima do inimigo.
-    const larguraBarra = Math.min(220, width * 0.42);
+    const larguraBarra = Math.max(80, Math.min(220, width * 0.42));
+    const yBarra = height * 0.6 - LADO_PX - 14;
+
     this.barraFundo = this.add
-      .rectangle(width * 0.74, height * 0.6 - LADO_PX - 14, larguraBarra, 12, 0x1b1f2b)
+      .rectangle(width * 0.74, yBarra, larguraBarra, 12, 0x1b1f2b)
       .setStrokeStyle(2, 0x0b0d12);
     this.barraHp = this.add
-      .rectangle(width * 0.74, height * 0.6 - LADO_PX - 14, larguraBarra - 4, 8, 0xe0574a)
+      .rectangle(width * 0.74, yBarra, larguraBarra - 4, 8, 0xe0574a)
       .setOrigin(0, 0.5);
 
     this.rotuloInimigo = this.add
@@ -208,7 +211,8 @@ export class BattleScene extends Phaser.Scene {
     this.inimigo.setTexture(CHAVE_TEXTURA);
 
     const fracao = c.hpMax > 0 ? Math.max(0, c.hpInimigo / c.hpMax) : 0;
-    this.barraHp.scaleX = Math.max(0.001, fracao);
+    // Origem 0 na esquerda: a barra esvazia da direita para a esquerda.
+    this.barraHp.setScale(Math.max(0.0001, fracao), 1);
     this.barraHp.x = this.barraFundo.x - (this.barraFundo.width - 4) / 2;
     this.rotuloInimigo.setText(c.nomeInimigo);
     this.rotuloEstagio.setText(`Estagio ${c.estagio}`);
@@ -223,11 +227,17 @@ export class BattleScene extends Phaser.Scene {
     const xInimigo = width * 0.74;
     const yInimigo = height * 0.6;
 
+    // A barra escala com a largura: o retangulo e desenhado com `scaleX` no
+    // painted, entao recalcular o `width` aqui sobrescreveria a fracao de vida.
+    const larguraBarra = Math.max(80, Math.min(220, width * 0.42));
+
     this.heroi.setPosition(xHeroi, yHeroi);
     this.inimigo.setPosition(xInimigo, yInimigo);
     this.flash.setPosition(xInimigo, yInimigo - LADO_PX / 2);
     this.barraFundo.setPosition(xInimigo, yInimigo - LADO_PX - 14);
+    this.barraFundo.setSize(larguraBarra, 12);
     this.barraHp.setPosition(xInimigo, yInimigo - LADO_PX - 14);
+    this.barraHp.setSize(larguraBarra - 4, 8);
     this.rotuloInimigo.setPosition(xInimigo, yInimigo - LADO_PX - 30);
     this.rotuloEstagio.setPosition(xInimigo, yInimigo - LADO_PX - 46);
 
@@ -295,13 +305,13 @@ export class BattleScene extends Phaser.Scene {
    */
   private desenharCenario(): void {
     const { width, height } = this.scale;
-    this.ceao?.destroy();
+    this.ceu?.destroy();
     this.chao?.destroy();
 
     const ceu = this.add.graphics();
     ceu.fillGradientStyle(0x1b2a4a, 0x1b2a4a, 0x243a63, 0x243a63, 1);
     ceu.fillRect(0, 0, width, height);
-    this.ceao = ceu;
+    this.ceu = ceu;
 
     const chao = this.add.graphics();
     const topo = Math.floor(height * 0.72);

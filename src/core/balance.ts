@@ -72,17 +72,21 @@ export function maximoCompravel(
   nivel: number,
   teto = 1_000_000,
 ): number {
-  if (ouro < custoDaUnidade(custoBase, crescimento, nivel)) return 0;
+  const primeiro = custoDaUnidade(custoBase, crescimento, nivel);
+  if (primeiro > ouro) return 0;
 
-  // Estimativa inicial por logaritmo, depois refina.
-  let k = 1;
+  // Soma termo a termo. A i-esima unidade (i >= 1) custa
+  // `custoDaUnidade(nivel + i - 1)` — o `-1` e essencial: sem ele a soma
+  // comeca uma unidade adiantada e o "Max" devolve uma unidade A MAIS do que
+  // o ouro paga. Foi exatamente o bug que travava o botao Max.
   let gasto = 0;
-  for (let i = 0; i < 10_000; i++) {
+  let k = 0;
+
+  while (k < teto) {
     const proximo = custoDaUnidade(custoBase, crescimento, nivel + k);
     if (gasto + proximo > ouro) break;
     gasto += proximo;
     k++;
-    if (k >= teto) break;
   }
   return k;
 }

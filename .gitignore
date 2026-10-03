@@ -1,5 +1,29 @@
-# Object file
-*.o
+# Dependencies
+node_modules/
 
-# Ada Library Information
-*.ali
+# Build
+dist/
+*.tsbuildinfo
+
+# Ambiente
+.env
+.env.local
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Bubblewrap / TWA
+# O projeto Android contem keystore e chave de assinatura — NUNCA versionar.
+twa/*
+!twa/README.md
+*.keystore
+*.jks
+
+# Android
+android/
+android-app/
+.gradle/
+local.properties

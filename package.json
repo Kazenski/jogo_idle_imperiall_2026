@@ -9,6 +9,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --port 4173",
     "typecheck": "tsc --noEmit",
+    "test": "node testes/rodar.mjs",
     "icones": "node scripts/gerar-icones.mjs",
     "twa:init": "bubblewrap init",
     "twa:update": "bubblewrap update",

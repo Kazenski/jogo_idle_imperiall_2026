@@ -13,10 +13,25 @@ const SUFIXOS = [
   { limite: 1e3, sufixo: 'K' },
 ] as const;
 
-/** Abrevia com 2 casas decimais significantes. `1234567 -> 1.23M`. */
+/**
+ * Abrevia com 2 casas decimais significantes. `1234567 -> 1.23M`.
+ *
+ * DETALHE IMPORTANTE: abaixo de 10 mostramos decimais (`0.1/s` e nao `0/s`).
+ * No inicio do jogo todo valor de producao e fracionario — uma espada rende
+ * 0.1/s. Arredondar para inteiro faz o jogador ver "0/s" na loja inteira e
+ * achar que o jogo travou.
+ */
 export function abreviar(valor: number): string {
   if (!Number.isFinite(valor)) return '0';
   const abs = Math.abs(valor);
+
+  if (abs < 10) {
+    // 0.1 -> "0.1"  /  0.01 -> "0.01"  /  2.5 -> "2.5"
+    if (abs === 0) return '0';
+    if (abs < 0.01) return valor.toExponential(1).replace('e-', 'e-');
+    return String(Number(valor.toFixed(2)));
+  }
+
   if (abs < 1000) return String(Math.floor(valor));
 
   for (const { limite, sufixo } of SUFIXOS) {
