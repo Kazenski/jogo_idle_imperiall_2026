@@ -100,7 +100,7 @@ export function criarAjustes(cb: CallbacksAjustes): AjustesRefs {
     h('article', { class: 'painel' }, [
       h('h3', { class: 'painel-titulo' }, ['Sobre']),
       h('p', { class: 'painel-desc' }, [
-        'Idle RPG de cartas do Imperiall RPG. Roda offline, salva no proprio aparelho e nao usa servidor.',
+        'Idle RPG de cartas dark fantasy. Roda offline, salva no proprio aparelho e nao usa servidor.',
       ]),
     ]),
   ]);

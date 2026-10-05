@@ -4,11 +4,12 @@ import type { CardDef } from '../core/types';
  * ============================================================================
  * CONTEUDO — CARTAS
  * ============================================================================
- * Este e o arquivo que voce substitui pelo lore real do Imperiall RPG.
+ * Tema: dark fantasy estilo MU (equipamentos de eras, bestiario,
+ * reliquias). Ids e numeros sao ESTAVEIS: nunca mude um id ja
+ * publicado, ou os saves dos jogadores perdem a contagem daquela carta.
  *
  * COMO PREENCHER (nada aqui e codigo, e so dado):
- *   id          slug unico e estavel. Nunca mude depois de publicar, ou os
- *               saves dos jogadores perdem a contagem daquela carta.
+ *   id          slug unico e estavel.
  *   custoBase   ouro para a 1a unidade. Espaco entre 10 e 1e9.
  *   custoCrescimento  quanto o custo multiplica a cada nivel.
  *                      1.15 = suave (inicio)  /  1.25 = agressivo (fim de jogo)
@@ -24,8 +25,8 @@ import type { CardDef } from '../core/types';
 export const CARTAS: CardDef[] = [
   {
     id: 'espada-ferro',
-    nome: 'Espada de Ferro',
-    descricao: 'Aco simples do arsenal de infantaria. Confiavel e barata.',
+    nome: 'Espada do Recruta',
+    descricao: 'Aco simples do arsenal da vila. Confiavel e barata.',
     raridade: 'comum',
     sprite: 'espada',
     custoBase: 10,
@@ -37,7 +38,7 @@ export const CARTAS: CardDef[] = [
   },
   {
     id: 'escudo-madeira',
-    nome: 'Escudo de Madeira',
+    nome: 'Escudo de Carvalho',
     descricao: 'Tacos reforçados com couro. Segura o primeiro golpe sempre.',
     raridade: 'comum',
     sprite: 'escudo',
@@ -50,8 +51,8 @@ export const CARTAS: CardDef[] = [
   },
   {
     id: 'arco-cacador',
-    nome: 'Arco do Cacador',
-    descricao: 'Feito de teixo branco. Nao erra a distancia que foi calibrado.',
+    nome: 'Arco da Vigia',
+    descricao: 'Feito de teixo branco. Nunca erra a distância que foi calibrado.',
     raridade: 'incomum',
     sprite: 'arco',
     custoBase: 110,
@@ -63,8 +64,8 @@ export const CARTAS: CardDef[] = [
   },
   {
     id: 'pocao-vida',
-    nome: 'Pocao de Vida',
-    descricao: 'Cozida na hora pela curandeira da vila. Amarga, mas cura.',
+    nome: 'Pocao de Sangue',
+    descricao: 'Destilada da vinha vermelha do vale. Amarga, mas vital.',
     raridade: 'incomum',
     sprite: 'pocao',
     custoBase: 260,
@@ -76,8 +77,8 @@ export const CARTAS: CardDef[] = [
   },
   {
     id: 'elmo-imperial',
-    nome: 'Elmo Imperial',
-    descricao: 'Bronze da fundicao da capital. O brasão ja foi lido em mil bandeiras.',
+    nome: 'Elmo do Abismo',
+    descricao: 'Bronze negro da fundição da capital. O brasão ja foi lido em mil bandeiras.',
     raridade: 'raro',
     sprite: 'elmo',
     custoBase: 1_600,
@@ -89,7 +90,7 @@ export const CARTAS: CardDef[] = [
   },
   {
     id: 'capa-vento',
-    nome: 'Capa do Vento',
+    nome: 'Capa do Veu',
     descricao: 'Tecida com fio de prata. Some quando o inimigo pisca.',
     raridade: 'raro',
     sprite: 'capa',
@@ -102,7 +103,7 @@ export const CARTAS: CardDef[] = [
   },
   {
     id: 'martelo-runa',
-    nome: 'Martelo de Runa',
+    nome: 'Martelo do Forgeiro',
     descricao: 'Gravado com o alfabeto anterior ao reino. Vibra na hora do golpe.',
     raridade: 'epico',
     sprite: 'martelo',
@@ -115,7 +116,7 @@ export const CARTAS: CardDef[] = [
   },
   {
     id: 'coroa-ferro',
-    nome: 'Coroa de Ferro',
+    nome: 'Coroa do Rei Caido',
     descricao: 'Nenhum rei usou. Todo rei tentou.',
     raridade: 'epico',
     sprite: 'coroa',
@@ -127,8 +128,21 @@ export const CARTAS: CardDef[] = [
     niveisRequeridos: 30,
   },
   {
+    id: 'relicario-sangue',
+    nome: 'Reliquario de Sangue',
+    descricao: 'Um frasco com o ultimo suspiro de um santo. Pinga ouro.',
+    raridade: 'epico',
+    sprite: 'pocao',
+    custoBase: 150_000,
+    custoCrescimento: 1.185,
+    cpsBase: 1_150,
+    dpsBase: 820,
+    eraRequerida: 1,
+    niveisRequeridos: 33,
+  },
+  {
     id: 'bau-barbaro',
-    nome: 'Bau do Barba-Coisa',
+    nome: 'Bau do Necromante',
     descricao: 'Contentor de um avô que nao contou aonde esteve. Ainda rende.',
     raridade: 'epico',
     sprite: 'bau',
@@ -141,7 +155,7 @@ export const CARTAS: CardDef[] = [
   },
   {
     id: 'golem-pedra',
-    nome: 'Golem de Pedra',
+    nome: 'Golem de Ebono',
     descricao: 'Reativado por ordem do Regente. Nao discute, nao negocia.',
     raridade: 'epico',
     sprite: 'golem',
@@ -153,9 +167,22 @@ export const CARTAS: CardDef[] = [
     niveisRequeridos: 44,
   },
   {
+    id: 'cristal-vazio',
+    nome: 'Cristal do Vazio',
+    descricao: 'Vidro de um mundo que ja foi. Ele sussurra, e o sussurro paga.',
+    raridade: 'epico',
+    sprite: 'espirito',
+    custoBase: 5_200_000,
+    custoCrescimento: 1.205,
+    cpsBase: 46_000,
+    dpsBase: 30_000,
+    eraRequerida: 3,
+    niveisRequeridos: 48,
+  },
+  {
     id: 'gato-sorte',
-    nome: 'Gato de Sorte',
-    descricao: 'Dorme em cima do tesouro. Leave-lo e perder a sorte.',
+    nome: 'Gato da Meia-Noite',
+    descricao: 'Dorme em cima do tesouro. Deixa-lo e perder a sorte.',
     raridade: 'epico',
     sprite: 'gato',
     custoBase: 11_000_000,
@@ -167,8 +194,8 @@ export const CARTAS: CardDef[] = [
   },
   {
     id: 'espirito-chama',
-    nome: 'Espirito da Chama',
-    descricao: 'Sairam da fornalha do reino. Servem a alguem, e esse alguem sou eu.',
+    nome: 'Espirito do Inferno',
+    descricao: 'Saíram da fornalha do reino. Servem a alguem, e esse alguem sou eu.',
     raridade: 'lendario',
     sprite: 'espirito',
     custoBase: 62_000_000,
@@ -180,7 +207,7 @@ export const CARTAS: CardDef[] = [
   },
   {
     id: 'dragao-anciao',
-    nome: 'Dragao Anciao',
+    nome: 'Dragao do Crepusculo',
     descricao: 'A unica criatura que o conselho do reino ainda tema em voz baixa.',
     raridade: 'lendario',
     sprite: 'dragao',
@@ -190,6 +217,32 @@ export const CARTAS: CardDef[] = [
     dpsBase: 3_100_000,
     eraRequerida: 6,
     niveisRequeridos: 74,
+  },
+  {
+    id: 'foice-alma',
+    nome: 'Foice das Almas',
+    descricao: 'Ceifou duzentos mil nomes. O ultimo ainda esta preso na lamina.',
+    raridade: 'lendario',
+    sprite: 'espada',
+    custoBase: 900_000_000,
+    custoCrescimento: 1.22,
+    cpsBase: 6_100_000,
+    dpsBase: 4_700_000,
+    eraRequerida: 7,
+    niveisRequeridos: 80,
+  },
+  {
+    id: 'trono-crepusculo',
+    nome: 'Trono do Crepusculo',
+    descricao: 'O assento onde o ultimo rei assinou o fim de tudo. Ainda aquece.',
+    raridade: 'lendario',
+    sprite: 'coroa',
+    custoBase: 4_200_000_000,
+    custoCrescimento: 1.225,
+    cpsBase: 27_000_000,
+    dpsBase: 21_000_000,
+    eraRequerida: 8,
+    niveisRequeridos: 86,
   },
 ];
 

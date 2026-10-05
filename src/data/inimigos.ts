@@ -4,12 +4,14 @@ import type { EnemyDef } from '../core/types';
  * ============================================================================
  * CONTEUDO — INIMIGOS
  * ============================================================================
+ * Tema: bestiario dark fantasy estilo MU.
  * `estagio` = em qual estagio da progressao o inimigo aparece pela 1a vez.
  * Estagios posteriores reaproveitam a MESMA definicao escalada por
  * `hpCrescimento` / `ouroCrescimento`, entao a lista nao precisa ser infinita.
  *
- * Para trocar pelo lore real: ajuste os nomes/racas e mantenha os numeros
- * subindo de forma monotonica senao o jogador ganha uma parede.
+ * Regra: nomes/racas sao livres, mas os numeros devem subir de forma
+ * monotonica (hpBase, ouroBase, estagio, eraRequerida) senao o jogador
+ * ganha uma parede.
  * ============================================================================
  */
 export interface InimigoDef extends EnemyDef {
@@ -52,7 +54,7 @@ export const INIMIGOS: InimigoDef[] = [
   },
   {
     estagio: 16,
-    nome: 'Sereia da Afluente',
+    nome: 'Naide da Correnteza',
     sprite: 'sereia',
     hpBase: 38,
     hpCrescimento: 1.135,
@@ -63,7 +65,7 @@ export const INIMIGOS: InimigoDef[] = [
   },
   {
     estagio: 26,
-    nome: 'Morcego-Caverna',
+    nome: 'Morcego da Caverna',
     sprite: 'morcego',
     hpBase: 40,
     hpCrescimento: 1.135,
@@ -74,7 +76,7 @@ export const INIMIGOS: InimigoDef[] = [
   },
   {
     estagio: 40,
-    nome: 'Golem de Patrulha',
+    nome: 'Golem de Ebono',
     sprite: 'golem',
     hpBase: 42,
     hpCrescimento: 1.135,
@@ -85,7 +87,7 @@ export const INIMIGOS: InimigoDef[] = [
   },
   {
     estagio: 58,
-    nome: 'Espirito Perdido',
+    nome: 'Espirito do Veu',
     sprite: 'espirito',
     hpBase: 44,
     hpCrescimento: 1.135,
@@ -95,8 +97,19 @@ export const INIMIGOS: InimigoDef[] = [
     niveisRequeridos: 58,
   },
   {
+    estagio: 68,
+    nome: 'Succuba do Veu',
+    sprite: 'espirito',
+    hpBase: 45,
+    hpCrescimento: 1.135,
+    ouroBase: 19,
+    ouroCrescimento: 1.112,
+    eraRequerida: 5,
+    niveisRequeridos: 68,
+  },
+  {
     estagio: 80,
-    nome: 'Dragao Ancião',
+    nome: 'Dragao do Crepusculo',
     sprite: 'dragao',
     hpBase: 46,
     hpCrescimento: 1.135,
@@ -104,6 +117,17 @@ export const INIMIGOS: InimigoDef[] = [
     ouroCrescimento: 1.112,
     eraRequerida: 6,
     niveisRequeridos: 80,
+  },
+  {
+    estagio: 100,
+    nome: 'Cavaleiro do Crepusculo',
+    sprite: 'golem',
+    hpBase: 48,
+    hpCrescimento: 1.135,
+    ouroBase: 24,
+    ouroCrescimento: 1.112,
+    eraRequerida: 7,
+    niveisRequeridos: 100,
   },
 ];
 

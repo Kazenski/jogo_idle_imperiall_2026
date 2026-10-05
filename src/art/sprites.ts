@@ -31,27 +31,27 @@ export const LADO = 16;
  * Para re-tematizar o jogo inteiro, mexa so aqui.
  */
 const PALETA: Record<string, string> = {
-  K: '#12141c', // contorno
-  T: '#9fb0cc', // aco
-  P: '#e8f1ff', // aco brilhante
-  S: '#a8b3cc', // cinza claro
-  G: '#6b7594', // cinza
-  I: '#5c6b8a', // ferro
-  W: '#eef2fb', // branco
-  C: '#bfe9f5', // vidro
-  N: '#6b4423', // madeira escura
-  M: '#9c6b38', // madeira
-  L: '#c99a5b', // madeira clara
-  B: '#8a6a3a', // latao
+  K: '#0e0b16', // contorno (quase preto roxo)
+  T: '#9a86c2', // aco arcana
+  P: '#e3d9f7', // aco brilhante (lavanda pálida)
+  S: '#7a6f99', // cinza violeta
+  G: '#544a70', // grafite violeta
+  I: '#443a5e', // ferro sombrio
+  W: '#f2ecf7', // branco osso
+  C: '#9fd8f2', // vidro arcana (azul)
+  N: '#2b2033', // ebono escuro
+  M: '#4a3350', // ebono
+  L: '#6b4a63', // ebono claro
+  B: '#7a5c3e', // bronze envelhecido
   O: '#c08a3e', // ouro
   Y: '#ffe27a', // ouro claro
   A: '#f2c14e', // amarelo
   '2': '#fff6d5', // nucleo quente (espirito)
-  H: '#e0ac69', // pele
+  H: '#d9a066', // pele
   E: '#4f8f52', // verde
   F: '#2f5c34', // verde escuro
-  R: '#8f2436', // vermelho escuro
-  V: '#f5795c', // vermelho claro
+  R: '#7a1f2b', // sangue seco
+  V: '#e05a4e', // carmim
 };
 
 const DOT = '.';
