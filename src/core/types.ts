@@ -93,6 +93,8 @@ export interface SaveData {
   ultimoPrestagioEm: number;
 
   cartas: CardLevels;
+  /** Nivel de forja (+N) por carta. Ausente = +0. */
+  forjas: Record<string, number>;
   inimigosDerrotados: number;
   /** Maior nivel de inimigo ja alcancado. */
   estagioDesbloqueado: number;

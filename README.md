@@ -1,6 +1,6 @@
 # Imperiall Idle
 
-Idle RPG de cartas ambientado no [Imperiall RPG](https://imperiallworld.com/).
+Idle RPG de cartas em tom dark fantasy estilo MU (equipamentos de eras, bestiário, prestígio).
 Roda no navegador (PWA, instalável) e pode virar APK Android via TWA.
 
 **Jogue em:** <https://kazenski.github.io/jogo_idle_imperiall_2026/>
@@ -15,6 +15,10 @@ estágios crescentes. Duas camadas de reset dão a curva de progressão longa:
 
 - **Arenação** — moeda permanente. Zera a run, mantém as cartas.
 - **Renarquiciar (prestígio)** — zera tudo, concede **Coroas** (+% permanente).
+
+**Forja (+N)** — cada carta pode ser aprimorada até +15 (+10% de
+produção por nível). +1 a +3 garantidos; de +4 em diante a chance
+cai (90% → 24%). Falha mantém o nível (fail-safe).
 
 ## Decisões de arquitetura
 
@@ -57,7 +61,7 @@ cartas e derruba a taxa de quadros num celular médio.
 ```powershell
 npm install
 npm run dev        # http://localhost:5173/jogo_idle_imperiall_2026/
-npm test           # 39 testes do núcleo
+npm test           # 57 testes do núcleo
 npm run build      # gera dist/ com service worker
 npm run preview    # serve dist/ (localhost:4173)
 ```
@@ -124,13 +128,16 @@ Regras para não quebrar a curva:
 obrigatório:** acrescente o default em `saveNovo()` *e* um passo novo em
 `MIGRACOES`. Nunca edite um bloco `versao: N` já publicado.
 
+Schema atual: **versão 2** — `forjas` (nível de forja por carta). Saves v1
+migram sozinhos ao abrir.
+
 Como não há backend, o save é **por aparelho**. Quem troca de celular precisa
 exportar/importar manualmente (aba Ajustes). Um futuro "login com GitHub +
 Gist" resolveria isso sem mudar o formato do save.
 
 ## Estado atual
 
-- 13 cartas, 8 inimigos, 4 camadas de progressão (nível do herói, cartas,
+- 17 cartas, 10 inimigos, 4 camadas de progressão (nível do herói, cartas,
   Arenação, prestígio)
 - Offline até 12 h (100% até 8 h, depois 25%)
 - PWA instalável, Service Worker com precache, funciona offline
@@ -139,5 +146,6 @@ Gist" resolveria isso sem mudar o formato do save.
 
 ## Licença
 
-Código do jogo: use como quiser. O lore e o material do Imperiall RPG pertencem
-aos seus autores — confirme antes de distribuir.
+Código do jogo: use como quiser. O conteúdo (cartas, inimigos, lore) é
+original deste projeto. O nome "Imperiall" pertence aos seus autores
+(imperiallworld.com) — confirme antes de distribuir.

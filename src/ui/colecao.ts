@@ -1,8 +1,9 @@
 import { CARTAS_POR_ID } from '../data/cartas';
+import { previaForja } from '../core/forja';
 import { COR_RARIDADE, NOME_RARIDADE, ROTULO_SPRITE, spriteDataUri } from '../art/sprites';
 import type { EstadoDerivado, SaveData } from '../core/types';
 import { abreviar, porcentagem } from './formatar';
-import { definirTexto, h } from './dom';
+import { botao, definirTexto, h } from './dom';
 
 export interface ColecaoRefs {
   raiz: HTMLElement;
@@ -12,8 +13,12 @@ export interface ColecaoRefs {
 interface Cartao {
   elemento: HTMLElement;
   elNivel: HTMLElement;
+  elForja: HTMLElement;
   elCps: HTMLElement;
   elShare: HTMLElement;
+  linhaForja: HTMLElement;
+  elForjaInfo: HTMLElement;
+  botaoForjar: HTMLButtonElement;
 }
 
 /**
@@ -21,9 +26,10 @@ interface Cartao {
  *
  * Mostra todas as cartas do conteudo, inclusive as ainda bloqueadas, para o
  * jogador ver o que falta. Cartas bloqueadas ficam esmaecidas e mostram o
- * requisito.
+ * requisito. Cartas adquiridas ganham a forja (+N): selo, custo, chance e
+ * botao — a unica forma de gastar ouro em algo que ja se tem.
  */
-export function criarColecao(): ColecaoRefs {
+export function criarColecao(aoForjar: (cardId: string) => void): ColecaoRefs {
   const grade = h('div', { class: 'colecao-grade' });
   const raiz = h('section', { class: 'tela tela--colecao', 'aria-label': 'Colecao' }, [
     h('div', { class: 'colecao-topo' }, [h('h2', { class: 'tela-titulo' }, ['Colecao'])]),
@@ -37,8 +43,17 @@ export function criarColecao(): ColecaoRefs {
       if (cartoes.has(def.id)) continue;
 
       const elNivel = h('span', { class: 'cartao-nivel' });
+      const elForja = h('span', { class: 'cartao-forja' });
       const elCps = h('span', { class: 'cartao-cps' });
       const elShare = h('span', { class: 'cartao-share' });
+      const elForjaInfo = h('span', { class: 'cartao-forja-info' });
+      const botaoForjar = botao('Forjar', () => aoForjar(def.id), {
+        class: 'cartao-forjar',
+      });
+      const linhaForja = h('div', { class: 'cartao-forja-row' }, [
+        elForjaInfo,
+        botaoForjar,
+      ]);
 
       const elemento = h(
         'article',
@@ -62,14 +77,25 @@ export function criarColecao(): ColecaoRefs {
           ]),
           h('h3', { class: 'cartao-nome' }, [def.nome]),
           elNivel,
+          elForja,
           elCps,
           elShare,
+          linhaForja,
           h('p', { class: 'cartao-desc' }, [def.descricao]),
         ],
       );
 
       grade.append(elemento);
-      cartoes.set(def.id, { elemento, elNivel, elCps, elShare });
+      cartoes.set(def.id, {
+        elemento,
+        elNivel,
+        elForja,
+        elCps,
+        elShare,
+        linhaForja,
+        elForjaInfo,
+        botaoForjar,
+      });
     }
   }
 
@@ -92,6 +118,10 @@ export function criarColecao(): ColecaoRefs {
 
         definirTexto(cartao.elNivel, nivel > 0 ? `Nv. ${nivel}` : 'Nao adquirida');
 
+        const forja = save.forjas[def.id] ?? 0;
+        cartao.elForja.hidden = forja <= 0;
+        definirTexto(cartao.elForja, forja > 0 ? `+${forja}` : '');
+
         const cpsDaCarta = stats.cpsPorCarta[def.id] ?? 0;
         const dpsDaCarta = stats.dpsPorCarta[def.id] ?? 0;
         definirTexto(
@@ -112,6 +142,24 @@ export function criarColecao(): ColecaoRefs {
           definirTexto(cartao.elShare, `${porcentagem(cpsDaCarta / stats.cps, 1)} do total`);
         } else {
           definirTexto(cartao.elShare, '0% do total');
+        }
+
+        // Forja: so para cartas que o jogador ja tem.
+        const previa = previaForja(save, def.id);
+        cartao.linhaForja.hidden = !previa.adquirida;
+        if (previa.adquirida) {
+          if (previa.noTeto) {
+            definirTexto(cartao.elForjaInfo, 'Forja MAX');
+            cartao.botaoForjar.disabled = true;
+            definirTexto(cartao.botaoForjar, 'MAX');
+          } else {
+            definirTexto(
+              cartao.elForjaInfo,
+              `${porcentagem(previa.chance)} · ${abreviar(previa.custo)} ouro`,
+            );
+            cartao.botaoForjar.disabled = !previa.acessivel;
+            definirTexto(cartao.botaoForjar, `Forjar +${previa.nivelAtual + 1}`);
+          }
         }
       }
     },

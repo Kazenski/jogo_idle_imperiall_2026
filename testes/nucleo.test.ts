@@ -38,6 +38,7 @@ import { fazerPrestigio, previaPrestigio } from '../src/core/prestigio.ts';
 import { abreviar, duracao } from '../src/ui/formatar.ts';
 import { CARTAS_POR_ID } from '../src/data/cartas.ts';
 import { inimigoDoEstagio } from '../src/data/inimigos.ts';
+import { chanceDeSucesso, forjar, previaForja } from '../src/core/forja.ts';
 
 let passou = 0;
 const falhas: string[] = [];
@@ -213,12 +214,12 @@ teste('prefs invalidas caem no default', () => {
 });
 
 teste('save de versao futura e rebaixado para a atual', () => {
-  assert.equal(carregarCru({ versao: 99, nivel: 7 }).versao, 1);
+  assert.equal(carregarCru({ versao: 99, nivel: 7 }).versao, 2);
 });
 
 teste('save sem versao (pre-esquema) e aceito', () => {
   const s = carregarCru({ ouro: 500 });
-  assert.equal(s.versao, 1);
+  assert.equal(s.versao, 2);
   assert.equal(s.ouro, 500);
 });
 
@@ -428,6 +429,105 @@ teste('cartas mais caras rendem mais que as mais baratas', () => {
       `${ordenadas[i]!.id} e mais cara que ${ordenadas[i - 1]!.id} mas rende menos`,
     );
   }
+});
+
+// ---------------------------------------------------------------------------
+grupo('Forja');
+
+teste('forja de sucesso desconta ouro e sobe o nivel', () => {
+  const save = saveNovo();
+  save.ouro = 10_000;
+  save.cartas = { 'espada-ferro': 1 };
+  const antes = save.ouro;
+  const r = forjar(save, 'espada-ferro', () => 0);
+  assert.equal(r.ok, true);
+  assert.equal(r.sucesso, true);
+  assert.equal(save.forjas['espada-ferro'], 1);
+  assert.ok(save.ouro < antes);
+  assert.ok(save.ouro >= 0);
+});
+
+teste('falha mantem o nivel (fail-safe) mas cobra a tentativa', () => {
+  const save = saveNovo();
+  save.ouro = 10_000;
+  save.cartas = { 'espada-ferro': 1 };
+  const antes = save.ouro;
+  const r = forjar(save, 'espada-ferro', () => 1);
+  assert.equal(r.ok, true);
+  assert.equal(r.sucesso, false);
+  assert.equal(save.forjas['espada-ferro'], undefined);
+  assert.ok(save.ouro < antes);
+});
+
+teste('ouro insuficiente recusa e nao cobra nada', () => {
+  const save = saveNovo();
+  save.ouro = 0;
+  save.cartas = { 'espada-ferro': 1 };
+  const r = forjar(save, 'espada-ferro', () => 0);
+  assert.equal(r.ok, false);
+  assert.equal(r.motivo, 'ouro-insuficiente');
+  assert.equal(save.ouro, 0);
+});
+
+teste('carta nao adquirida nao pode ser forjada', () => {
+  const save = saveNovo();
+  save.ouro = 1_000_000;
+  const r = forjar(save, 'espada-ferro', () => 0);
+  assert.equal(r.ok, false);
+  assert.equal(r.motivo, 'nao-adquirida');
+});
+
+teste('forja para no teto (+15)', () => {
+  const save = saveNovo();
+  save.ouro = 1e15;
+  save.cartas = { 'espada-ferro': 1 };
+  save.forjas = { 'espada-ferro': 15 };
+  const r = forjar(save, 'espada-ferro', () => 0);
+  assert.equal(r.ok, false);
+  assert.equal(r.motivo, 'no-teto');
+});
+
+teste('cada nivel de forja da +10% na producao da carta', () => {
+  const save = saveNovo();
+  save.cartas = { 'espada-ferro': 1 };
+  const semForja = derivar(save).cpsPorCarta['espada-ferro']!;
+  save.forjas = { 'espada-ferro': 5 };
+  const comForja = derivar(save).cpsPorCarta['espada-ferro']!;
+  assert.ok(Math.abs(comForja / semForja - 1.5) < 1e-9);
+});
+
+teste('a chance cai com o nivel e tem piso', () => {
+  assert.equal(chanceDeSucesso(0), 1);
+  assert.equal(chanceDeSucesso(2), 1);
+  assert.equal(chanceDeSucesso(3), 0.9);
+  assert.ok(chanceDeSucesso(10) < chanceDeSucesso(4));
+  assert.equal(chanceDeSucesso(14), 0.24);
+  assert.equal(chanceDeSucesso(99), 0.24);
+});
+
+teste('previaForja bate com o que forjar realmente cobra', () => {
+  const save = saveNovo();
+  save.ouro = 1e12;
+  save.cartas = { 'espada-ferro': 1 };
+  const p = previaForja(save, 'espada-ferro');
+  assert.equal(p.acessivel, true);
+  const r = forjar(save, 'espada-ferro', () => 0);
+  assert.equal(r.custo, p.custo);
+});
+
+teste('save v1 migra com forjas vazio', () => {
+  const s = carregarCru({ versao: 1, cartas: { 'espada-ferro': 3 }, ouro: 100 });
+  assert.deepEqual(s.forjas, {});
+  assert.equal(s.cartas['espada-ferro'], 3);
+});
+
+teste('forjas com id inexistente ou nivel invalido e descartado', () => {
+  const s = carregarCru({
+    versao: 2,
+    cartas: { 'espada-ferro': 1 },
+    forjas: { 'espada-ferro': 3, 'id-que-nao-existe': 9, 'golem-pedra': -2 },
+  });
+  assert.deepEqual(s.forjas, { 'espada-ferro': 3 });
 });
 
 // ---------------------------------------------------------------------------

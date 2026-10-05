@@ -1,6 +1,7 @@
 import { BALANCE } from '../core/balance';
 import { comprarCarta, criarCombate, tickCombate } from '../core/combate';
 import { custoArenacao, derivar } from '../core/estado';
+import { forjar } from '../core/forja';
 import { fazerPrestigio, previaPrestigio } from '../core/prestigio';
 import { aplicarOffline, carregar, carregarPrefs, salvar, salvarPrefs } from '../core/save';
 import { criarJogo } from '../scenes/BattleScene';
@@ -74,7 +75,21 @@ export function iniciarJogo(host: HTMLElement): void {
   loja.definirQuantidade(save.prefs.quantidadeCompra as SelecaoQuantidade);
 
   const painelCombate = criarPainelCombate();
-  const colecao = criarColecao();
+  const colecao = criarColecao((cardId) => {
+    const r = forjar(save, cardId);
+    if (!r.ok) {
+      if (r.motivo === 'ouro-insuficiente') avisar('Ouro insuficiente para forjar.');
+      return;
+    }
+    salvar(save);
+    renderTelas(derivar(save));
+    hud.atualizar(save, derivar(save), 0);
+    avisar(
+      r.sucesso
+        ? `Forjado +${r.nivelNovo}! (+${BALANCE.forjaBonusPorNivel * 100}% de producao)`
+        : 'A forja falhou — nivel mantido.',
+    );
+  });
 
   const prestigio = criarPrestigio({
     aoComprarArenacao() {

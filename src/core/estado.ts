@@ -1,8 +1,9 @@
 import { BALANCE } from './balance';
+import { multiplicadorForja } from './forja';
 import { CARTAS_POR_ID } from '../data/cartas';
 import type { CardDef, EstadoDerivado, SaveData } from './types';
 
-export const VERSAO_ATUAL = 1;
+export const VERSAO_ATUAL = 2;
 
 /**
  * Save novo. Todo save novo nasce daqui — se voce adicionar um campo
@@ -27,6 +28,7 @@ export function saveNovo(): SaveData {
     ultimoPrestagioEm: 0,
 
     cartas: {},
+    forjas: {},
     inimigosDerrotados: 0,
     estagioDesbloqueado: 1,
 
@@ -62,9 +64,12 @@ export function derivar(save: SaveData): EstadoDerivado {
     if (!def || nivel <= 0) continue;
 
     // Unidade de nivel N produz N vezes a base. Crescimento linear.
+    // A forja (+N) multiplica ESSA carta — bonus de equipamento,
+    // nao global, entao entra aqui e nao no multiplicador.
     const fatorUnidade = (nivel * (nivel + 1)) / 2;
-    cpsPorCarta[id] = def.cpsBase * fatorUnidade * multiplicador;
-    dpsPorCarta[id] = def.dpsBase * fatorUnidade;
+    const forja = multiplicadorForja(save.forjas[id] ?? 0);
+    cpsPorCarta[id] = def.cpsBase * fatorUnidade * multiplicador * forja;
+    dpsPorCarta[id] = def.dpsBase * fatorUnidade * forja;
 
     cps += cpsPorCarta[id];
     dps += dpsPorCarta[id];

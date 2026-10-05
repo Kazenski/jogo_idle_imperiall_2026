@@ -487,6 +487,57 @@ body {
   color: var(--texto-fraco);
 }
 
+/* --- Forja (+N) -------------------------------------------------------- */
+
+.cartao-forja {
+  display: inline-block;
+  margin: 2px 0 0;
+  padding: 1px 8px;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fundo-0);
+  background: var(--ouro);
+  border-radius: var(--raio);
+}
+
+.cartao-forja-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.cartao-forja-info {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 11px;
+  color: var(--texto-fraco);
+  font-variant-numeric: tabular-nums;
+}
+
+.cartao-forjar {
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fundo-0);
+  background: var(--verde);
+  border: none;
+  border-radius: var(--raio);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.cartao-forjar:disabled {
+  cursor: not-allowed;
+  color: var(--texto-fraco);
+  background: var(--fundo-3);
+}
+
+.cartao-forjar:not(:disabled):active {
+  transform: scale(0.98);
+}
+
 /* --- Prestigio ---------------------------------------------------------- */
 
 .prestigio-grade {

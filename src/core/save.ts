@@ -25,6 +25,12 @@ const MIGRACOES: Record<number, Migracao> = {
     versao: 1,
     prefs: { aba: 'combate', quantidadeCompra: 1, redutorAnimacoes: false },
   }),
+  // 1 -> 2: forjas (+N) — mapa de nivel de forja por carta.
+  1: (bruto) => ({
+    ...bruto,
+    versao: 2,
+    forjas: {},
+  }),
 };
 
 function migrar(bruto: Record<string, unknown>): SaveData {
@@ -61,6 +67,7 @@ function migrar(bruto: Record<string, unknown>): SaveData {
     ultimoPrestagioEm: Math.max(0, num(d.ultimoPrestagioEm)),
 
     cartas: sanitizeCartas(d.cartas),
+    forjas: sanitizeForjas(d.forjas),
     inimigosDerrotados: Math.max(0, Math.floor(num(d.inimigosDerrotados))),
     estagioDesbloqueado: Math.max(1, Math.floor(num(d.estagioDesbloqueado, 1))),
 
@@ -102,6 +109,23 @@ function sanitizeCartas(brutas: unknown): Record<string, number> {
     if (typeof nivel !== 'number' || !Number.isFinite(nivel)) continue;
     const n = Math.floor(nivel);
     if (n > 0) saida[id] = n;
+  }
+  return saida;
+}
+
+/**
+ * Descarta entradas invalidas do mapa de forjas: id que saiu do
+ * conteudo, nivel negativo ou acima do teto. Um `forjas` corrompido
+ * (ou de versao futura) nao pode injetar bonus de producao.
+ */
+function sanitizeForjas(brutas: unknown): Record<string, number> {
+  const saida: Record<string, number> = {};
+  if (!brutas || typeof brutas !== 'object') return saida;
+  for (const [id, nivel] of Object.entries(brutas as Record<string, unknown>)) {
+    if (!CARTAS_POR_ID[id]) continue;
+    if (typeof nivel !== 'number' || !Number.isFinite(nivel)) continue;
+    const n = Math.floor(nivel);
+    if (n > 0 && n <= BALANCE.forjaTeto) saida[id] = n;
   }
   return saida;
 }

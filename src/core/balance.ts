@@ -38,6 +38,24 @@ export const BALANCE = {
   /** Cada coroa = +fracao permanente de producao e poder. */
   ganhoPorCoral: 0.02,
 
+  /** Forja (+N): aprimoro de carta estilo MU. */
+  /** Nivel maximo de forja. */
+  forjaTeto: 15,
+  /** Cada +N de forja da esta fracao de cps e dps na carta. */
+  forjaBonusPorNivel: 0.1,
+  /** Custo da 1a tentativa = custoBase * forjaCustoFator. */
+  forjaCustoFator: 40,
+  /** Custo multiplica este fator a cada nivel de forja. */
+  forjaCustoCrescimento: 1.42,
+  /** Ate este nivel de forja a tentativa e garantida (+1 a +3). */
+  forjaSemRiscoAte: 3,
+  /** Chance no primeiro nivel com risco (a tentativa +4). */
+  forjaChanceBase: 0.9,
+  /** Queda de chance por nivel apos o sem-risco. */
+  forjaChanceDecaimento: 0.06,
+  /** Piso de chance (a tentativa +15). */
+  forjaChanceMin: 0.24,
+
   /** Minutos de progresso offline renderizados a 100%... */
   offlineMinutosFull: 60 * 8,
   /** ...e o excedente cai para esta fracao (evita voltar com numero absurdo). */
